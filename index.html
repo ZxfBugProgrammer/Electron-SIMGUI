@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <!-- import CSS -->
+  <link rel="stylesheet" href="./element-ui/lib/theme-chalk/index.css">
+  <script src="./js/highlight.pack.js"></script>
+  <link rel="stylesheet" type="text/css" href="./css/highlight/atom-one-light.css" />
+  <script>hljs.initHighlightingOnLoad();</script>
+</head>
+
+<body>
+  <el-container id="app">
+    <el-header>
+      <div id="stepBar" style="margin-top: 30px;" v-if="isShow">
+        <el-steps :active="active" finish-status="success" align-center>
+          <el-step title="选择文件夹路径" description="选择包含待查重文件的文件夹(纯英文路径)"></el-step>
+          <el-step title="选择查重参数" description="选择查重语言、查重阈值等"></el-step>
+          <el-step title="查重结果" description="查重结果展示"></el-step>
+        </el-steps>
+      </div>
+    </el-header>
+
+    <el-main>
+      <div id="chooseFilePath" style="margin-left: 30px; margin-right: 30px; margin-top: 15px;" v-if="isShow">
+        <el-input placeholder="请选择文件夹(纯英文路径)" v-model="filePath" :disabled="true">
+          <el-button slot="append" @click="choose" :disabled="disabled"> 选择文件夹 </el-button>
+        </el-input>
+      </div>
+
+      <div id="fileTable" v-if="isShow">
+        <el-table :data="tableData"
+          style="width: 95%; margin-top: 15px; margin-left: 30px; margin-right: 30px; text-align :center"
+          max-height="500" :row-style="{height: '0'} ">
+          <el-table-column prop="fileName" label="待查重文件文件名" min-width="40%">
+          </el-table-column>
+          <el-table-column prop="size" label="文件大小(Byte)" min-width="20%">
+          </el-table-column>
+          <el-table-column prop="mtime" label="修改时间" min-width="20%">
+          </el-table-column>
+          <el-table-column label="操作" min-width="20%">
+            <template slot-scope="scope">
+              <el-button @click.native.prevent="deleteRow(scope.$index, tableData)" type="text" size="small">
+                移除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
+      <div id="boxCard" v-if="isShow" style="margin-top: 50px; margin-left: 30px; margin-right: 30px;">
+        <el-card style='width: 80%; margin-right:auto; margin-left: auto; font-size: 18px; padding-left: 0.5em;'
+          shadow="hover">
+          本软件为SIM的GUI程序。<br>
+          SIM是Dick Grune开发的一款代码查重软件 <br>
+          软件使用说明如下：<br>
+          1. 把需要查重的代码放到同一个文件夹目录下。(只包含需要查重的代码文件，文件夹目录不包含中文)<br>
+          注：SIM只支持单语言，单文件查重。<br>
+          2. 选择文件夹路径。<br>
+          3. 选择待查重代码的语言及查重相似度阈值。 <br>
+          4. 点击进行查重。 <br>
+          5. 查看结果，人工复核。<br>
+          <br>
+          Made by ZXF <br>
+        </el-card>
+      </div>
+
+      <div id="chooseCode" v-if="isShow">
+        <el-row :gutter="20" style="margin-left: 30px;margin-right: 30px; margin-top: 50px;">
+          <el-col :span="5">
+            <template>
+              <el-select v-model="value" clearable placeholder="请选择查重语言">
+                <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+              </el-select>
+            </template>
+          </el-col>
+          <el-col :span="4">
+            <div style="border-radius: 30px; transform:translateY(50%);">
+              请选择查重阈值：
+            </div>
+          </el-col>
+          <el-col :span="15">
+            <template>
+              <div class="block">
+                <el-slider v-model="limitValue" :min="1" :max="100" :format-tooltip="handlDelta" show-input>
+                </el-slider>
+              </div>
+            </template>
+          </el-col>
+        </el-row>
+        <div style="text-align: center; margin-top: 50px;">
+          <img src="./src/pic1.png" style="width: 200px;">
+        </div>
+      </div>
+
+      <div id="resTable" v-show="isShow">
+        <div style="text-align:center; margin-top: 30px;">
+          <el-button round style="font-size: 18px; font-weight:600;">
+            &emsp;&emsp;点击表格中的&ensp;行&ensp;即可对比相应的代码文件&emsp;&emsp;</el-button>
+        </div>
+
+        <el-table ref='resTable1' :data="tableData"
+          style="width: 95%; margin-top: 15px; margin-left: 30px; margin-right: 30px; text-align :center"
+          max-height="500" :row-style="{height: '0'} " @row-click="clickRow">
+          <el-table-column prop="fileAName" label="代码文件A" min-width="40%">
+          </el-table-column>
+          <el-table-column prop="fileBName" label="代码文件B" min-width="40%">
+          </el-table-column>
+          <el-table-column prop="similarValue" label="相似度" min-width="20%">
+          </el-table-column>
+        </el-table>
+      </div>
+
+      <div id="codeShow" v-if="isShow" style="font-size: 19px;">
+        <el-page-header @back="goBack" content="代码对比">
+        </el-page-header>
+        <div style="text-align:center; margin-top: 30px;">
+          <el-button round v-text="megbtn1text" style="font-size: 19px; font-weight:700;"></el-button>
+        </div>
+        <el-row :gutter="15" style="margin-top: 20px; margin-left: 30px; margin-right: 30px;">
+          <el-col :span="12">
+            <div v-highlight>
+              <pre><code v-text="fileAStr" style="height: 600px;" :class="{'cpp':isCpp,'java':isJava}">
+              </code></pre>
+            </div>
+          </el-col>
+          <el-col :span="12">
+            <div v-highlight>
+              <pre><code v-text="fileBStr" style="height: 600px;" :class="{'cpp':isCpp,'java':isJava}">
+              </code></pre>
+            </div>
+          </el-col>
+      </div>
+
+
+      <div id="doneStep1" v-if="isShow">
+        <el-button ref='btn1' style="margin-top: 12px; position: fixed; bottom: 50px; right: 50px;" @click="next"
+          v-loading.fullscreen.lock="fullscreenLoading" type="primary" round v-text="buttonText">
+          下一步</el-button>
+      </div>
+    </el-main>
+  </el-container>
+</body>
+<!-- import Vue before Element -->
+<script src="./js/vue.js"></script>
+<!-- import JavaScript -->
+<script src="./element-ui/lib/index.js"></script>
+<script src="./js/index.js"></script>
+
+</html>
