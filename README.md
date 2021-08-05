@@ -3,7 +3,7 @@
 
 本项目是基于Electron和element UI开发的一款代码查重软件，其内核使用了开源软件[SIM](https://dickgrune.com/Programs/similarity_tester/)（SIM是大佬[Dick Grune](https://dickgrune.com/)开发的一款代码查重软件）
 
-本项目为SIM添加了GUI界面，简化了操作，技术含量不高，如有错漏，请大佬们指出。
+本项目为SIM添加了GUI界面，简化了操作，**练手之作，技术含量不高，如有错漏，请大佬们指出**。
 
 ## 二、代码使用方式
 
@@ -21,7 +21,28 @@ npm install
 npm start
 ```
 
-## 三、软件预览图
+## 三、打包应用方式
+
+修改js/index.js（js文件夹下的index.js文件）中的第342-345行，取消342行的注释，注释345行。修改后的部分代码如下：
+
+```javascript
+//开发调试时调用SIM的命令
+//let commandStr = '"' + path.join(__dirname, '/src/SIM/sim_' + chooseCodeData.value + '.exe') + '" ' + simArgs
+                
+//打包应用时调用SIM的命令
+let commandStr = '"' + path.join(__dirname, '../SIM/sim_' + chooseCodeData.value + '.exe') + '" ' + simArgs
+```
+
+使用如下命令打包应用
+
+```shell
+# 全局安装electron-packager
+npm install electron-packager -g
+# 运行打包命令 应用生成在./out 中
+npm run build-electron
+```
+
+## 四、软件预览图
 
 ![预览图1](./Preview-Image/1.png)
 
@@ -33,6 +54,6 @@ npm start
 
 ![预览图5](./Preview-Image/5.png)
 
-## 四、联系方式
+## 五、联系方式
 
 如有问题可联系邮箱  1150123839@qq.com
