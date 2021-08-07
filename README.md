@@ -33,7 +33,7 @@ npm start
 let commandStr = '"' + path.join(__dirname, '../SIM/sim_' + chooseCodeData.value + '.exe') + '" ' + simArgs
 ```
 
-使用如下命令打包应用
+使用如下命令打包应用(仅限打包win32平台应用)
 
 ```shell
 # 全局安装electron-packager
@@ -41,6 +41,8 @@ npm install electron-packager -g
 # 运行打包命令 应用生成在./out 中
 npm run build-electron
 ```
+
+可在release页面下载打包好的win32平台应用：[下载链接](https://github.com/ZxfBugProgrammer/Electron-SIMGUI/releases)
 
 ## 四、软件预览图
 
